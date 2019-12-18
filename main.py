@@ -100,13 +100,14 @@ def qtrain(model, maze, epsilon, **opt):
         envstate = qmaze1.observe()
 
         n_episodes = 0
+        # TODO: loop starts here!
         while not game_over:
             valid_actions = qmaze1.valid_actions()
             if not valid_actions: break
             prev_envstate = envstate
             # Get next action
             if np.random.rand() < epsilon:
-                action = random.choice(valid_actions)
+                action = choice(valid_actions)
             else:
                 action = np.argmax(experience.predict(prev_envstate))
 
@@ -127,13 +128,14 @@ def qtrain(model, maze, epsilon, **opt):
             n_episodes += 1
 
             # Train neural network model
+            # TODO: here it gets stuck!
             inputs, targets = experience.get_data(data_size=data_size)
             h = model.fit(
                 inputs,
                 targets,
                 epochs=8,
                 batch_size=16,
-                verbose=0,
+                verbose=2,
             )
             loss = model.evaluate(inputs, targets, verbose=0)
 
@@ -147,7 +149,6 @@ def qtrain(model, maze, epsilon, **opt):
         # we simply check if training has exhausted all free cells and if in all
         # cases the agent won
         if win_rate > 0.9: epsilon = 0.05
-        from main import completion_check
         if sum(win_history[-hsize:]) == hsize and completion_check(model, qmaze1):
             print("Reached 100%% win rate at epoch: %d" % (epoch,))
             break
@@ -182,9 +183,9 @@ def format_time(seconds):
 
 def build_model(maze: list, lr=0.001):
     model = Sequential()
-    model.add(Dense(maze.shape, input_shape=(maze.shape)))
+    model.add(Dense((maze.__sizeof__()), input_shape=(64,)))
     model.add(PReLU())
-    model.add(Dense(maze.shape))
+    model.add(Dense(maze.__sizeof__()))
     model.add(PReLU())
     model.add(Dense(Constants.num_actions))
     model.compile(optimizer='adam', loss='mse')
@@ -202,6 +203,6 @@ if __name__ == '__main__':
     # show(qmaze1)
     # experience1 = Experience()
     model = build_model(maze)
-    qtrain(model, maze, Constants.epsilon, epochs=1000, max_memory=8 * maze.shape, data_size=32)
+    qtrain(model, maze, Constants.epsilon, epochs=1000, max_memory=8 * maze.__sizeof__(), data_size=32)
     # print("reward=", reward)
     # show(qmaze1)

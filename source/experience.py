@@ -14,7 +14,7 @@ class Experience:
         # memory[i] = episode
         # envstate == flattened 1d maze cells info, including rat cell (see method: observe)
         self.memory.append(episode)
-        if len(self.memory) > self.max_memory:
+        if len(self.memory) > int(self.max_memory):
             del self.memory[0]
 
     def predict(self, envstate):
